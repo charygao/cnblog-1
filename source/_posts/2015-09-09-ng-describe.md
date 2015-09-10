@@ -4,8 +4,6 @@ authorId: BMU
 tags: [angular, testing]
 ---
 
-## Improve your Angular.js unit tests with ng-describe
-
 ### Overview
 I had a some time this weekend and was exploring the ways we could improve our javascript unit tests. The one thing I do not really like about angular unit testing is too much boilerplate code. Probably you all know something like this:
 
