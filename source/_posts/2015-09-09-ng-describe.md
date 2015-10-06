@@ -273,3 +273,9 @@ ngDescribe({
 
 ### Summary:
 I think ng-describe provides us with more clean and transparent way to write our unit tests. It is clear what you are trying to test, to mock or inject. And as a bonus with fewer lines of code.
+
+<center>
+<blockquote class="twitter-tweet" lang="en"><p lang="en" dir="ltr">Improve <a href="https://twitter.com/hashtag/angular?src=hash">#angular</a> <a href="https://twitter.com/hashtag/unitTests?src=hash">#unitTests</a> with ng-describe: <a href="http://t.co/VNaTLfAirk">http://t.co/VNaTLfAirk</a></p>&mdash; CN Group CZ (@cngroup_cz) <a href="https://twitter.com/cngroup_cz/status/641989072945348608">September 10, 2015</a></blockquote>
+<script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
+</center>
+
