@@ -3,13 +3,13 @@ date: 2015/06/10 12:00
 authorId: JZM
 ---
 
-V této sérii článků se dozvíte, co autora na letošním GeeCONu zaujalo (a že jej toho zaujalo hodně).  
+Ve článku se dozvíte, co autora na letošním GeeCONu zaujalo (a že jej toho zaujalo hodně).  
 _Pokud Vás jakýkoli z výcuců zaujme a přáli byste si vědět více, neváhejte napsat. Vždy se můžeme domluvit na vnitrofiremní INDEED nebo na další, podrobnější článek na blog._
  
  
 <!-- more -->
 
-###Letem Světem s Geekoštětem
+###Dojmy z GeeCON 2015 - Krakow
 
 
 
