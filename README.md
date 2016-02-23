@@ -8,4 +8,4 @@ When installed, go to blog folder and run `hexo server -i 127.0.0.1`. Enjoy your
 
 # Drafts
 
-If you push your post to branch with prefix `posts/` (e.g. `posts/graphite`), your post will be rendered and displayed at http://development.cnblogtest.divshot.io (cn/steen). Of course if somebody else pushes to another `post/*` branch your stuff will be overwritten. Use it to verify that your post is OK, including attachments.
+If you push your post to branch with prefix `posts/` (e.g. `posts/graphite`), your post will be rendered and displayed at http://cnblogstage.firebase.io/ (blog@cngroup.dk/steen). Of course if somebody else pushes to another `post/*` branch your stuff will be overwritten. Use it to verify that your post is OK, including attachments.
