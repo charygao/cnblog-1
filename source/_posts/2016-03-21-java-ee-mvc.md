@@ -20,17 +20,17 @@ Pro podrobnější vysvětlení viz [[3]](#JSF).
 Vydání Java EE 8 je plánováno až na první pololetí roku 2017, ale my si můžeme nové API vyzkoušet již nyní. Práce na referenční implementaci jsou totiž v plném proudu a i když do finální verze specifikace jistě dojde ke změnám, základní principy zůstanou zachovány.
 Zmíněná implementace nese název Ozark a je ke stažení zde: [[4]](#Ozark). Pokud používáte Gradle, stačí přidat do build.gradle
 
-```
+```groovy
     compile group:'org.glassfish.ozark', name: 'ozark', version: '1.0.0-m02'
 ```
 
-a můžeme začít vyvíjet. Pro spuštění potřebujeme samozřejmě vhodný JEE server. Autoři Ozarku testují své dílo s GlassFish 4.1 Nightly Sept 15, 2015, takže my použijeme totéž [[4]](#GlassFish).
+a můžeme začít vyvíjet. Pro spuštění potřebujeme samozřejmě vhodný JEE server. Autoři Ozarku testují své dílo s GlassFish 4.1 Nightly Sept 15, 2015, takže my použijeme totéž [[6]](#GlassFish).
 
 ## Controller
 
 Autoři specifikace MVC API nezačínali na zelené louce a nepokoušeli se znovu vynalézat kolo. Specifikace využívá CDI a v podstatě pouze rozšiřuje existující specifikaci JAX-RS. Pokud se podíváme na typický controller pro operace CRUD, je to jasně vidět:
 
-```
+```java
 @Controller @Path("projects")
 public class ProjectController {
 
@@ -80,7 +80,7 @@ public class ProjectController {
 
 Většina anotací v controlleru je převzatá z JAX-RS:
 
-{% img  center-block /attachments/2016-03-21-java-ee-mvc/jeemvcjaxrs.png 800 %}
+{% img  center-block /attachments/2016-03-21-java-ee-mvc/jeemvcjaxrs.png 400 %}
 
 Model je do controlleru injectován pomocí CDI. Takže jedinými novinkami jsou
 - anotace Controller, která oznamuje, že třída je MVC controllerem
@@ -98,7 +98,7 @@ Controller má dvě možnosti, jak předat model do view:
 Na view není nic zvláštního. Implementace musí podporovat JSP a Facelty, další technologie (například Thymeleaf) budou volitelné.
 View pro metodu `list()` z našeho controlleru může vypadat například takto:
 
-```
+```jsp
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
