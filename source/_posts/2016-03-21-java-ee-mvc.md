@@ -89,7 +89,7 @@ Model je do controlleru injectován pomocí CDI. Takže jedinými novinkami jsou
 
 Zdrojové kody celé demo aplikace včetně view jsou kdispozici zde: [[6]](#Demo)
 
-## Model a controller
+## Model a view
 
 Controller má dvě možnosti, jak předat model do view:
 1. Pomocí mapy "Models", jak je to popsáno výše.
