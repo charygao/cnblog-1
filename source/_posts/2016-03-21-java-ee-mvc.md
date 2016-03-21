@@ -11,7 +11,7 @@ Následně započaly práce na JSR-371 nazvaném MVC: Model-View-Controller API 
  
 ## K čemu to je
 
-Můžete namítnout, že v JEE už jeden MVC framework fro webové aplikace máme: JSF. Autoři vysvětlují, že se jedná o trochu jiné MVC.
+Můžete namítnout, že v JEE už jeden MVC framework pro webové aplikace máme: JSF. Autoři vysvětlují, že se jedná o trochu jiné MVC.
 JSF je zaměřeno na vytváření komponent, které jsou využívány IoC frameworkem. Nové MVC API ponechává vývojářům větší kontrolu, neboť aplikační kód funguje na úrovni HTTP požadavků a odpovědí - prostě tak, jak to známe ze Spring MVC.
 Pro podrobnější vysvětlení viz [[3]](#JSF).
 
@@ -87,7 +87,7 @@ Model je do controlleru injectován pomocí CDI. Takže jedinými novinkami jsou
 - rozhraní Models, což je pouze mapa, kterou controller naplní hodnotami. Tyto hodnoty jsou potom k dispozici ve view
 - návratová hodnota typu String, která identifikuje view, které bude použito pro renderování modelu.
 
-Zdrojové kody celé demo aplikace včetně view jsou kdispozici zde: [[6]](#Demo)
+Zdrojové kody celé demo aplikace včetně view najdete zde: [[6]](#Demo)
 
 ## Model a view
 
@@ -95,7 +95,7 @@ Controller má dvě možnosti, jak předat model do view:
 1. Pomocí mapy "Models", jak je to popsáno výše.
 2. Naplněním pojmenovaného (@Named) beanu, který je potom do view injectován pomocí CDI. Implementace MVC nemusí tuto možnost podporovat, je pouze doporučená.
 
-Na view není nic zvláštního. Implementace musí podporovat JSP a Facelty, další technologie (například Thymeleaf) budou volitelné.
+Na view není nic zvláštního. Implementace musí podporovat JSP a Facelety, další technologie (například Thymeleaf) budou volitelné.
 View pro metodu `list()` z našeho controlleru může vypadat například takto:
 
 ```jsp
