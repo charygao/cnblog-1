@@ -9,7 +9,7 @@ tags: [kotlin, android, jvm languages]
 Android specifics
 -----------------
 
-Although the language for writing apps is Java, the Android environment has always been a bit different. The virtual machine (originally Dalvik, ART since KitKat) is not a regular JVM. It doesn't support the *InvokeDynamic* instruction, so dynamic languages need to resort to reflection, which is still quite slow (although the situation is not as bad as it was at the time of single-core phones with 512 MB of RAM). Runtime code generation is a problem as well, because the byte code has to be written to and read from the file system which is again very slow (it can delay the app starts by several seconds).
+Although the language for writing apps is Java, Android has always been a bit different than a typical server-side Java development environment. The virtual machine (originally Dalvik; ART since KitKat) is not a regular JVM. It doesn't support the *InvokeDynamic* instruction, so dynamic languages need to resort to reflection, which is still quite slow even nowadays (although the situation is not as bad as it used to be at the time of single-core phones with 512 MB of RAM). Runtime code generation is a problem as well, because the byte code has to be written to and read from the file system which is again very slow (it can delay the app starts by several seconds).
 
 Because of this, the obvious Java alternatives such as **Groovy** or JRuby have always struggled to be of practical use. However, Groovy's [2.4 release](http://groovy-lang.org/releasenotes/groovy-2.4.html) finally brings official Android support, such as a Gradle plugin and special *grooid* jar variants optimized for mobile usage. In order to avoid the above-mentioned performance issues, it's still recommended to use static compilation wherever possible and limit the bytecode size using ProGuard, but Groovy's expressiveness can still significantly reduce the typical Android boilerplate.
 
@@ -18,9 +18,9 @@ Java 8
 
 Language-wise, Android is lagging behind official Java as well. The syntax-sugar features of Java 7 (such as diamond operator or switch on strings) have been available for quite some time, but any API-based language features are still dependent on the platform version supported by the given app. The *try-with-resources* block for example requires API level 19 (KitKat), but the various Jelly Bean versions still occupy about 20% of the market.
 
-Even if we ignore the APIs that make no sense on Android such as Swing or CORBA, it is still not fully Java 7 compliant at the moment: The ForkJoin framework has been implemented in API 21, but the NIO.2 is still missing. The reason for this is that Google based the Android SDK on *Apache Harmony* - an alternative, but currently dead JRE implementation, so they are forced to reimplement most of the the new language and library features from scratch.
+Even if we ignore the APIs that make no sense on Android such as Swing or CORBA, it is still not fully Java 7 compliant at the moment: The ForkJoin framework has been implemented in API 21, but the NIO.2 is still missing. The reason for this is that Google based the Android SDK on *Apache Harmony* - an alternative, but currently dead JRE implementation, so they have been forced to reimplement most of the the new language and library features from scratch.
 
-But the good news is that Google and Oracle recently announced that they finally agreed on adopting OpenJDK for the Android SDK and the first results can already be seen in the [Android N preview](http://developer.android.com/preview/j8-jack.html). Thanks to the new Jack compiler, lambda expressions and method references can be used, which are compiled into traditional anonymous classes, so it's possible to backport them even to older platform versions in the same manner as other syntactic sugar. Default and static interface methods are supported as well, and currently, at least the whole Stream API is implemented and we can possibly expect most or all of the Java 7/8 APIs to be included in the final N release. However, it will still take a couple of years before the app developers can require N as the minimum SDK level. And in the end, even Java 8 is still only Java and we can do better than that, can't we?
+But the good news is that Google and Oracle recently announced that they finally agreed on adopting OpenJDK for the Android SDK and the first results can already be seen in the [Android N preview](http://developer.android.com/preview/j8-jack.html). Thanks to the new Jack compiler, lambda expressions and method references can finally be used! They are compiled into traditional anonymous classes, so it's possible to backport them even to older platform versions in the same manner as other syntactic sugar. Default and static interface methods are supported as well, and currently, at least the whole Stream API is implemented and we can possibly expect most or all of the Java 7/8 APIs to be included in the final N release. However, it will still take a couple of years before the app developers can require N as the minimum SDK level. And in the end, even Java 8 is still only Java and we can do better than that, can't we?
 
 The Babylon of languages
 ------------------------
@@ -29,7 +29,7 @@ We've already covered Groovy, so what other options are there? A popular Java al
 
 Another JVM language whose popularity is on the rise, is **Clojure**. Like Groovy, it has to pay the price for dynamism, but the optimizing compiler named *Skummet* aims to address this. Clojure seems a bit like a world of its own, not only syntactically, but also from the tooling point of view, so in the end, the discussion is not as much about Android developers using Clojure, but Clojure developers writing apps for Android.
 
-A direct competition to Kotlin is **Ceylon**, a statically-typed language developed by Gavin King (the author of Hibernate) at Red Hat. One of its main features is a strong type system without the complexity of Scala. Similarly to Kotlin, it supports nullable types such as `String?`, whose value can either be a String or null (as opposed to `String` which is compile-time checked not to contain null). However, in case of Ceylon, this is just an alias of `String | Null`, which is a union type. We can know them from Java's multicatch blocks, but here, they are a first-class language feature. One of the issues with Ceylon is the tooling support: targeting Android is not its priority and the official Gradle plugin is currently only in version `0.0.2`.
+A direct competition to Kotlin is **Ceylon**, also a recent statically-typed language developed by Gavin King (the author of Hibernate) at Red Hat. One of its main features is a strong type system without the complexity of Scala. Similarly to Kotlin, it supports nullable types such as `String?`, whose value can either be a String or null (as opposed to `String` which is compile-time checked not to contain null). However, in case of Ceylon, this is just an alias of `String | Null`, which is a union type. We can know them from Java's multicatch blocks, but here, they are a first-class language feature. One of the issues with Ceylon is the tooling support: targeting Android is not its priority and the official Gradle plugin is currently only in version `0.0.2`.
 
 Kotlin
 ------
@@ -59,10 +59,26 @@ import my.extensions.reverse // importing a function, not a class
 "foo".reverse()
 ```
 
-In Java, we import the generated class into which the package function was compiled. The default name is derived from the file name, so it would be `StringExtensionsKt` in this case, but we can use the above annotation to specify a more friendly looking name:
+In Java, we import the generated class that the package function was compiled into. The default name is derived from the file name, so it would be `StringExtensionsKt` in this case, but we can use the above annotation to specify a more friendly looking name:
 
 ```java
 import my.extensions.StringUtils;
 
 StringUtils.reverse("foo");
 ```
+
+Given that Kotlin is developed by JetBrains, the authors of IntelliJ IDEA and its derivates, great tooling support is no surprise. Once we download the official plugin into our Android Studio or IntelliJ, enabling Kotlin support in the project is as simple as clicking the *Configure Kotlin in Project* command in the Tools menu. This will add the Gradle plugin and the required dependencies into the build file. After that, we can start writing Kotlin classes either in the `src/main/kotlin` directory or we can put them directly into `src/main/java` along with the existing Java classes. But that's not all, the IDE even provides a very action that can automatically convert existing Java classes into Kotlin. However, as we'll see in the following exercise, the such code sometimes requires a bit of manual fine-tuning to get it working.
+
+{% img center-block /attachments/2016-05-11-android-kotlin/convert-to-kotlin.png %}
+
+Code example
+------------
+
+We'll illustrate the process of converting a Java based Android app to Kotlin on a very simplistic "todo" app. It only contains a single listview of items, each which a text and a checkbox to mark it's completion. Pressing the plus button opens a dialog with text input for a new item. The items can be deleted either individually or it's possible to delete all completed items using the overflow menu.
+
+We'll start with the `master` branch, which contains only Java, and try to reach the same state as in the `kotlin` branch, which already contains a working result. The source code contains only 4 classes:
+ - `Todo` - model for a todo item
+ - `TodoAdapter` - list adapter which creates layout for each todo
+ - `TextInputDialog` - dialog fragment with a text field
+ - `MainActivity` - activity that wires all this together
+ 
