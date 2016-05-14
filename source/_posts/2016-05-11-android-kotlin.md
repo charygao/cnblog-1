@@ -71,7 +71,7 @@ Given that Kotlin is developed by JetBrains, the authors of IntelliJ IDEA and it
 
 We'll illustrate the process of converting Java to Kotlin on a very simplistic [TODO app](https://github.com/natix643/kotlin-todo). It only contains a single listview of todo items, each with a text and a checkbox to mark it's completion. Pressing the plus button opens a dialog with text input for adding a new todo. The items can be deleted either individually or it's possible to delete all completed todos using the overflow menu.
 
-{% img center-block /attachments/2016-05-11-android-kotlin/todo-app.png 800 %}
+{% img center-block /attachments/2016-05-11-android-kotlin/todo-app.png 400 %}
 
 We'll take off from the `master` branch, which contains only Java, and gradually convert all classes into Kotlin while trying not to break any functionality. The `kotlin` branch already contains a working result.
  
