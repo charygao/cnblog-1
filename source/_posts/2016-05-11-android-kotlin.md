@@ -71,7 +71,7 @@ Given that Kotlin is developed by JetBrains, the authors of IntelliJ IDEA and it
 
 We'll illustrate the process of converting Java to Kotlin on a very simplistic [TODO app](https://github.com/natix643/kotlin-todo). It only contains a single listview of todo items, each with a text and a checkbox to mark it's completion. Pressing the plus button opens a dialog with text input for adding a new todo. The items can be deleted either individually or it's possible to delete all completed todos using the overflow menu.
 
-{% img center-block /attachments/2016-05-11-android-kotlin/todo-app.png %}
+{% img center-block /attachments/2016-05-11-android-kotlin/todo-app.png 800 %}
 
 We'll take off from the `master` branch, which contains only Java, and gradually convert all classes into Kotlin while trying not to break any functionality. The `kotlin` branch already contains a working result.
  
@@ -292,4 +292,17 @@ And all the single line method bodies can be replaced with expressions. No retur
  override fun getCount() = items.size
  override fun getItem(position: Int) = items[position]
  override fun getItemId(position: Int) = position.toLong()
+```
+
+However, if we run the app now and try to add an item, it crashes with this exception:
+
+```
+java.lang.IllegalArgumentException: Parameter specified as non-null is null: method kotlin.jvm.internal.Intrinsics.checkParameterIsNotNull, parameter convertView
+    at cz.natix.todo.TodoAdapter.getView(TodoAdapter.kt:0)
+```
+
+Unlike the above auto-translated code, which could be cosmetically improved, but otherwise worked correctly, null handling is currently something that needs manual verification and correction. The tool generates the `getView()` method header with all types not-nullable, however the value of `convertView` parameter can be null, so we need to add a question mark to its type:
+
+```kotlin
+override fun getView(position: Int, convertView: View?, parent: ViewGroup): View
 ```
