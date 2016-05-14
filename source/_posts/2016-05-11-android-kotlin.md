@@ -6,15 +6,13 @@ tags: [kotlin, android, jvm languages]
 
 <!-- more -->
 
-Android specifics
------------------
+## Android specifics
 
 Although the language for writing apps is Java, Android has always been a bit different than a typical server-side Java development environment. The virtual machine (originally Dalvik; ART since KitKat) is not a regular JVM. It doesn't support the *InvokeDynamic* instruction, so dynamic languages need to resort to reflection, which is still quite slow even nowadays (although the situation is not as bad as it used to be at the time of single-core phones with 512 MB of RAM). Runtime code generation is a problem as well, because the byte code has to be written to and read from the file system which is again very slow (it can delay the app starts by several seconds).
 
 Because of this, the obvious Java alternatives such as **Groovy** or JRuby have always struggled to be of practical use. However, Groovy's [2.4 release](http://groovy-lang.org/releasenotes/groovy-2.4.html) finally brings official Android support, such as a Gradle plugin and special *grooid* jar variants optimized for mobile usage. In order to avoid the above-mentioned performance issues, it's still recommended to use static compilation wherever possible and limit the bytecode size using ProGuard, but Groovy's expressiveness can still significantly reduce the typical Android boilerplate.
 
-Java 8
-------
+## Java 8
 
 Language-wise, Android is lagging behind official Java as well. The syntax-sugar features of Java 7 (such as diamond operator or switch on strings) have been available for quite some time, but any API-based language features are still dependent on the platform version supported by the given app. The *try-with-resources* block for example requires API level 19 (KitKat), but the various Jelly Bean versions still occupy about 20% of the market.
 
@@ -22,8 +20,7 @@ Even if we ignore the APIs that make no sense on Android such as Swing or CORBA,
 
 But the good news is that Google and Oracle recently announced that they finally agreed on adopting OpenJDK for the Android SDK and the first results can already be seen in the [Android N preview](http://developer.android.com/preview/j8-jack.html). Thanks to the new Jack compiler, lambda expressions and method references can finally be used! They are compiled into traditional anonymous classes, so it's possible to backport them even to older platform versions in the same manner as other syntactic sugar. Default and static interface methods are supported as well, and currently, at least the whole Stream API is implemented and we can possibly expect most or all of the Java 7/8 APIs to be included in the final N release. However, it will still take a couple of years before the app developers can require N as the minimum SDK level. And in the end, even Java 8 is still only Java and we can do better than that, can't we?
 
-The Babylon of languages
-------------------------
+## The Babylon of languages
 
 We've already covered Groovy, so what other options are there? A popular Java alternative in the server world is **Scala**, which blends OOP with functional programming into a very powerful, yet type-safe language. Being statically-typed, it doesn't suffer as much perfomance-wise (although it relies on higher-order constructs much more than Java) and the size of the standard library (which includes a massive collection framework) isn't much of a problem anymore. The real issue can come from the complexity of using an academia-based language that supports every feature ever created. Interoperability with Java is mostly one-way and the tooling support (e.g. Gradle integration) isn't first class as well. But still, the boilerplate reduction with the flexibility and power of the language (on par with Groovy) can probably outweigh this.
 
@@ -31,8 +28,7 @@ Another JVM language whose popularity is on the rise, is **Clojure**. Like Groov
 
 A direct competition to Kotlin is **Ceylon**, also a recent statically-typed language developed by Gavin King (the author of Hibernate) at Red Hat. One of its main features is a strong type system without the complexity of Scala. Similarly to Kotlin, it supports nullable types such as `String?`, whose value can either be a String or null (as opposed to `String` which is compile-time checked not to contain null). However, in case of Ceylon, this is just an alias of `String | Null`, which is a union type. We can know them from Java's multicatch blocks, but here, they are a first-class language feature. One of the issues with Ceylon is the tooling support: targeting Android is not its priority and the official Gradle plugin is currently only in version `0.0.2`.
 
-Kotlin
-------
+## Kotlin
 
 So how does **Kotlin** stand in all this? According to the official website, it's a *Statically typed programming language for the JVM, Android and the browser* and also *100% interoperable with Java*.  When looking into the notes for the recent [1.0 release](https://blog.jetbrains.com/kotlin/2016/02/kotlin-1-0-released-pragmatic-language-for-jvm-and-android/), it's clear that the main idea behind the its design is **pragmatism**: Rather than offering lots of fancy and magical language features or a massive standard library, it just tackles the most painful issues with Java, such as null handling, lack of properties and the inability to add methods to 3rd party classes, while maintaining bidirectional compatibility with existing Java code and providing great tooling support as well. In the end, the language just feels like "a better Java".
 
@@ -71,14 +67,229 @@ Given that Kotlin is developed by JetBrains, the authors of IntelliJ IDEA and it
 
 {% img center-block /attachments/2016-05-11-android-kotlin/convert-to-kotlin.png %}
 
-Code example
-------------
+# Code example
 
 We'll illustrate the process of converting Java to Kotlin on a very simplistic [TODO app](https://github.com/natix643/kotlin-todo). It only contains a single listview of todo items, each with a text and a checkbox to mark it's completion. Pressing the plus button opens a dialog with text input for adding a new todo. The items can be deleted either individually or it's possible to delete all completed todos using the overflow menu.
 
-We'll start with the `master` branch, which contains only Java, and try to reach the same state as in the `kotlin` branch, which already contains a working result. The source code contains only 4 classes:
- - `Todo` - model for a todo item
- - `TodoAdapter` - list adapter which creates layout for each todo
- - `TextInputDialog` - dialog fragment with a text field
- - `MainActivity` - activity that wires all this together
+{% img center-block /attachments/2016-05-11-android-kotlin/todo-app.png %}
+
+We'll take off from the `master` branch, which contains only Java, and gradually convert all classes into Kotlin while trying not to break any functionality. The `kotlin` branch already contains a working result.
  
+## Todo class
+
+We'll start simply:
+
+```java
+// Todo.java
+
+public class Todo {
+
+    private final String text;
+    private boolean completed;
+
+    public Todo(String text) {
+        this.text = text;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public boolean isCompleted() {
+        return completed;
+    }
+
+    public void setCompleted(boolean completed) {
+        this.completed = completed;
+    }
+}
+```
+
+The model for a todo item is implemented using a very simple value class with only 2 properties. But do we really need so much code for that? Let's try out the conversion magic:
+
+```kotlin
+// Todo.kt
+
+class Todo(val text: String) {
+    var isCompleted: Boolean = false
+}
+```
+
+If you've ever written any Scala, this code probably looks more than familiar. Kotlin has removed all the boilerplate, so properties are declared only once, either in the class body, or (if initialized by the constructor), directly in the class header. Classes are also public by default. An interesting detail is that properties don't have default values (such as `null`, `false` or zero), so we must manually initialize the value of `isCompleted`.
+
+The cool thing is that all the other Java classes remain working without any problems, the getters, setters and the constructor are still there in the bytecode, we just don't need to write them explicitly. This means that we can just hit **Run** and the app still works.
+
+## TodoAdapter class
+
+```java
+// TodoAdapter.java
+
+public class TodoAdapter extends BaseAdapter {
+
+    private final LayoutInflater inflater;
+
+    private List<Todo> items = new ArrayList<>();
+
+    public TodoAdapter(Context context) {
+        this.inflater = LayoutInflater.from(context);
+    }
+
+    @Override
+    public int getCount() {
+        return items.size();
+    }
+
+    @Override
+    public Todo getItem(int position) {
+        return items.get(position);
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return position;
+    }
+
+    public List<Todo> getItems() {
+        return items;
+    }
+
+    public void add(Todo todo) {
+        items.add(todo);
+        notifyDataSetChanged();
+    }
+
+    public void remove(int position) {
+        items.remove(position);
+        notifyDataSetChanged();
+    }
+
+    public void removeAll(Collection<Todo> todos) {
+        items.removeAll(todos);
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+        final Todo todo = getItem(position);
+
+        View layout = inflater.inflate(R.layout.item, parent, false);
+
+        final TextView textView = (TextView) layout.findViewById(R.id.todoText);
+        textView.setText(todo.getText());
+
+        CheckBox checkBox = (CheckBox) layout.findViewById(R.id.todoCompleted);
+        checkBox.setChecked(todo.isCompleted());
+        checkBox.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                todo.setCompleted(isChecked);
+
+                int flags = textView.getPaintFlags();
+                if (isChecked) {
+                    textView.setPaintFlags(flags | Paint.STRIKE_THRU_TEXT_FLAG);
+                } else {
+                    textView.setPaintFlags(flags ^ Paint.STRIKE_THRU_TEXT_FLAG);
+                }
+            }
+        });
+
+        return layout;
+    }
+
+}
+```
+
+This is a classic Android list adapter. It wraps a list of todos and implements  the `getView()` method which creates a layout for each of the items. For the sake of simplicity of the demo, this app doesn't persist its data anyhow, so the adapter is actually the only holder of the data model and all creating and deleting of todos is simply done through the adapter's methods that just modify the underlying list. The translation gives us this:
+
+```kotlin
+// TodoAdapter.kt
+
+class TodoAdapter(context: Context) : BaseAdapter() {
+
+    private val inflater: LayoutInflater
+
+    private val items = ArrayList<Todo>()
+
+    init {
+        this.inflater = LayoutInflater.from(context)
+    }
+
+    override fun getCount(): Int {
+        return items.size
+    }
+
+    override fun getItem(position: Int): Todo {
+        return items[position]
+    }
+
+    override fun getItemId(position: Int): Long {
+        return position.toLong()
+    }
+
+    fun getItems(): List<Todo> {
+        return items
+    }
+
+    fun add(todo: Todo) {
+        items.add(todo)
+        notifyDataSetChanged()
+    }
+
+    fun remove(position: Int) {
+        items.removeAt(position)
+        notifyDataSetChanged()
+    }
+
+    fun removeAll(todos: Collection<Todo>) {
+        items.removeAll(todos)
+        notifyDataSetChanged()
+    }
+
+    override fun getView(position: Int, convertView: View, parent: ViewGroup): View {
+        val todo = getItem(position)
+
+        val layout = inflater.inflate(R.layout.item, parent, false)
+
+        val textView = layout.findViewById(R.id.todoText) as TextView
+        textView.text = todo.text
+
+        val checkBox = layout.findViewById(R.id.todoCompleted) as CheckBox
+        checkBox.isChecked = todo.isCompleted
+        checkBox.setOnCheckedChangeListener { buttonView, isChecked ->
+            todo.isCompleted = isChecked
+
+            val flags = textView.paintFlags
+            if (isChecked) {
+                textView.paintFlags = flags or Paint.STRIKE_THRU_TEXT_FLAG
+            } else {
+                textView.paintFlags = flags xor Paint.STRIKE_THRU_TEXT_FLAG
+            }
+        }
+
+        return layout
+    }
+
+}
+```
+
+Except for the missing semicolon and a nice lambda expression in the place of `OnCheckedChangeListener`, not much has actually changed, but there are a few places, that we can improve.
+
+We can initialize the inflater inline instead of the `init` block:
+
+```kotlin
+private val inflater = LayoutInflater.from(context)
+```
+
+The `items` private field with a getter can be replaced with a public property. We could omit the type declaration, but that would make its type `ArrayList`, so if we want to declare `java.util.List` as usual, we need to use its kotlin counterpart `kotlin.collections.MutableList` (`kotlin.collections.List` is an immutable interface for contrast).
+
+```kotlin
+val items : MutableList<Todo> = ArrayList()
+```
+
+And all the single line method bodies can be replaced with expressions. No return type declaration is needed in such case. Note that list supports the array operator and that there is no implicit numeric conversion from `Int` to `Long` which makes Kotlin's type system stricter than in most strongly typed languages.
+
+```kotlin
+ override fun getCount() = items.size
+ override fun getItem(position: Int) = items[position]
+ override fun getItemId(position: Int) = position.toLong()
+```
