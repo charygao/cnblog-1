@@ -115,7 +115,7 @@ class Todo(val text: String) {
 }
 ```
 
-If you've ever written any Scala, this code probably looks more than familiar. Kotlin has removed all the boilerplate, so properties are declared only once, either in the class body, or (if initialized by the constructor), directly in the class header. Classes are also public by default. An interesting detail is that properties don't have default values (such as `null`, `false` or zero), so we must manually initialize the value of `isCompleted`.
+If you've ever written any Scala, this code probably looks more than familiar. Kotlin has removed all the boilerplate, so properties are declared only once, either in the class body, or (if initialized by the constructor) directly in the class header. Classes are also public by default. An interesting detail is that properties don't have default values (such as `null`, `false` or zero), so we must manually initialize the value of `isCompleted`.
 
 The cool thing is that all the other Java classes remain working without any problems, the getters, setters and the constructor are still there in the bytecode, we just don't need to write them explicitly. This means that we can just hit **Run** and the app still works.
 
@@ -272,7 +272,7 @@ class TodoAdapter(context: Context) : BaseAdapter() {
 }
 ```
 
-Except for the missing semicolon and a nice lambda expression in the place of `OnCheckedChangeListener`, not much has actually changed, but there are a few places, that we can improve.
+Except for the missing semicolons and a nice lambda expression in the place of `OnCheckedChangeListener`, not much has actually changed, but there are a few places that we can improve by hand.
 
 We can initialize the inflater inline instead of the `init` block:
 
@@ -306,3 +306,96 @@ Unlike the above auto-translated code, which could be cosmetically improved, but
 ```kotlin
 override fun getView(position: Int, convertView: View?, parent: ViewGroup): View
 ```
+
+## TextInputDialog class
+
+```java
+// TextInputDialog.java
+
+public class TextInputDialog extends DialogFragment {
+
+    public interface Callback {
+        void onTextInput(String text);
+    }
+
+    private Callback callback;
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        callback = (Callback) activity;
+    }
+
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+        View layout = LayoutInflater.from(getActivity()).inflate(R.layout.dialog, null);
+        final EditText editText = (EditText) layout.findViewById(R.id.editText);
+
+        return new AlertDialog.Builder(getActivity())
+                .setTitle(R.string.dialog_title)
+                .setView(layout)
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        callback.onTextInput(editText.getText().toString());
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .create();
+    }
+}
+```
+
+The dialog with a text field for adding a new item is implemented using a dialog fragment, which uses the verbose and cumbersome (yet standard) pattern of defining a callback interface, which creating activity must implement. In the `onAttach()` method, we cast the activity to the callback and in the OK button listener, pass the contents of the textfield into it. Sadly, Kotlin itself can't save us from this boilerplate.
+
+```kotlin
+// TextInputDialog.kt
+
+class TextInputDialog : DialogFragment() {
+
+    interface Callback {
+        fun onTextInput(text: String)
+    }
+
+    private var callback: Callback? = null
+
+    override fun onAttach(activity: Activity) {
+        super.onAttach(activity)
+        callback = activity as Callback
+    }
+
+    override fun onCreateDialog(savedInstanceState: Bundle): Dialog {
+        val layout = LayoutInflater.from(activity).inflate(R.layout.dialog, null)
+        val editText = layout.findViewById(R.id.editText) as EditText
+
+        return AlertDialog.Builder(activity)
+                .setTitle(R.string.dialog_title)
+                .setView(layout)
+                .setPositiveButton(android.R.string.ok) { dialog, which ->
+                    callback!!.onTextInput(editText.text.toString())
+                }
+                .setNegativeButton(android.R.string.cancel, null)
+                .create()
+    }
+}
+```
+
+After the previous lesson, we won't be much surprised by the fact that the `savedInstanceState` parameter needs to be redeclared as nullable. However, there's also the opposite case: because the  `callback` property is initialized in a method and not the in constructor, the translator declared it as nullable. This means that in order to access it, we must either:
+
+ 1. check it for null
+ 2. bypass null safety using the `!!` operator as in the code above
+
+Because the `onAttach()` method is guaranteed to be called by the framework before anything else and in a sense serves as a constructor, we can safely assume that `callback` is actually not nullable, so option 1 isn't suitable. However, using visually frightening things such as `!!` is not good for your code review, so what can we do?
+
+There is actually a third option: changing the `callback` property to not-nullable isn't possible on its own (it must be initialized inline), but we can declare it as _late init_:
+
+```kotlin
+private lateinit var callback: Callback
+```
+
+This allows us to have not-nullable properties that are safely initialized by other means than the constructor, such as framework callbacks or dependency injection. You might object that this is like throwing the null-safety away and no better than sticking to Java and its NPEs, but there is actually a subtle difference:
+
+ - Even after a nullable property has a value, it's still possible to reassign null to it again at any point in the program. Once a late init property has been initialized, it can never become "un-initialized" again.
+ - When a late init property is accessed before it's initialization, an exception with a very specific message is thrown instead of plain NPE.
+
+In the end, this feature is not intended for bypassing the type system, but for situations where the logic of the program safely guarantees that the initialization of the properties always happens before accessing them, but the compiler just cannot prove it.
