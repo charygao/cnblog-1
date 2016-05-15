@@ -346,7 +346,7 @@ public class TextInputDialog extends DialogFragment {
 }
 ```
 
-The dialog with a text field for adding a new item is implemented using a dialog fragment, which uses the verbose and cumbersome (yet standard) pattern of defining a callback interface, which creating activity must implement. In the `onAttach()` method, we cast the activity to the callback and in the OK button listener, pass the contents of the textfield into it. Sadly, Kotlin itself can't save us from this boilerplate.
+The dialog with a text field for adding a new item is implemented using a dialog fragment, which uses the verbose and cumbersome (yet standard) pattern of defining a callback interface that the creating activity must implement. In the `onAttach()` method, we cast the activity to the callback and in the OK button listener, we pass the contents of the textfield it. Sadly, Kotlin itself can't save us from this boilerplate.
 
 ```kotlin
 // TextInputDialog.kt
@@ -396,6 +396,203 @@ private lateinit var callback: Callback
 This allows us to have not-nullable properties that are safely initialized by other means than the constructor, such as framework callbacks or dependency injection. You might object that this is like throwing the null-safety away and no better than sticking to Java and its NPEs, but there is actually a subtle difference:
 
  - Even after a nullable property has a value, it's still possible to reassign null to it again at any point in the program. Once a late init property has been initialized, it can never become "un-initialized" again.
- - When a late init property is accessed before it's initialization, an exception with a very specific message is thrown instead of plain NPE.
+ - When a late init property is accessed before its initialization, an exception with a very specific message is thrown instead of a plain NullPointerException.
 
 In the end, this feature is not intended for bypassing the type system, but for situations where the logic of the program safely guarantees that the initialization of the properties always happens before accessing them, but the compiler just cannot prove it.
+
+### MainActivity class
+
+```java
+// MainActivity.java
+
+public class MainActivity extends AppCompatActivity implements TextInputDialog.Callback {
+
+    private TodoAdapter adapter;
+
+    private ListView listView;
+    private TextView emptyListText;
+    private FloatingActionButton floatingButton;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.main);
+
+        listView = (ListView) findViewById(android.R.id.list);
+        emptyListText = (TextView) findViewById(android.R.id.empty);
+
+        floatingButton = (FloatingActionButton) findViewById(R.id.floatingButton);
+        floatingButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new TextInputDialog().show(getFragmentManager(), "");
+            }
+        });
+
+        adapter = new TodoAdapter(this);
+
+        listView.setAdapter(adapter);
+        listView.setEmptyView(emptyListText);
+        registerForContextMenu(listView);
+    }
+
+    @Override
+    public void onTextInput(String text) {
+        adapter.add(new Todo(text));
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.menu_delete_completed) {
+            Collection<Todo> completedTodos = Collections2.filter(adapter.getItems(), isCompleted);
+            adapter.removeAll(completedTodos);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
+        getMenuInflater().inflate(R.menu.context, menu);
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.menu_delete) {
+            AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+            adapter.remove(info.position);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private static final Predicate<Todo> isCompleted = new Predicate<Todo>() {
+        @Override
+        public boolean apply(Todo todo) {
+            return todo.isCompleted();
+        }
+    };
+
+}
+```
+
+And last but not least, we have an activity that wires all the previous code together: initializes the listview, binds it with the adapter and adds creating of the dialog to the listener of the floating button. Also the dialog's callback is implemented by the `onTextInput()` method.
+
+Apart from that, the activity also registers the list items for a context menu with a command for individual deletion. And finally, the options menu provides a command to delete all completed todos at once. Because we're stuck with Java ~ 7 at moment, we use Guava's `Predicate` and `filter()` to simplify selection of the adapter's items.
+
+```kotlin
+// MainActivity.kt
+
+class MainActivity : AppCompatActivity(), TextInputDialog.Callback {
+
+    private var adapter: TodoAdapter? = null
+
+    private var listView: ListView? = null
+    private var emptyListText: TextView? = null
+    private var floatingButton: FloatingActionButton? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.main)
+
+        listView = findViewById(android.R.id.list) as ListView?
+        emptyListText = findViewById(android.R.id.empty) as TextView?
+
+        floatingButton = findViewById(R.id.floatingButton) as FloatingActionButton?
+        floatingButton!!.setOnClickListener { TextInputDialog().show(fragmentManager, "") }
+
+        adapter = TodoAdapter(this)
+
+        listView!!.adapter = adapter
+        listView!!.emptyView = emptyListText
+        registerForContextMenu(listView)
+    }
+
+    override fun onTextInput(text: String) {
+        adapter!!.add(Todo(text))
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.main, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == R.id.menu_delete_completed) {
+            val completedTodos = Collections2.filter(adapter!!.items, isCompleted)
+            adapter!!.removeAll(completedTodos)
+            return true
+        } else {
+            return false
+        }
+    }
+
+    override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenuInfo) {
+        menuInflater.inflate(R.menu.context, menu)
+    }
+
+    override fun onContextItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == R.id.menu_delete) {
+            val info = item.menuInfo as AdapterContextMenuInfo
+            adapter!!.remove(info.position)
+            return true
+        } else {
+            return false
+        }
+    }
+
+    companion object {
+
+        private val isCompleted = Predicate<cz.natix.todo.Todo> { todo -> todo!!.isCompleted }
+    }
+
+}
+```
+
+This time, the translated code runs without any exceptions (the `savedInstanceState` parameter is correctly defined as `Bundle?`), but again, we can improve it a bit. Because all the properties are initialized in the `onCreate()` method, we could change them to late init as in the previous class, but there is also another possibility: because the properties don't actually depend on the method parameter (only on the state of the activity), it's possible to initialize them inline, but lazily. After then, we can remove all of the ugly exclamation marks from the calling code.
+
+```kotlin
+private val adapter by lazy { TodoAdapter(this) }
+private val listView by lazy { findViewById(android.R.id.list) as ListView }
+private val emptyListText by lazy { findViewById(android.R.id.empty) as TextView }
+private val floatingButton by lazy { findViewById(R.id.floatingButton) as FloatingActionButton }
+```
+
+An interesting detail here is that the `isCompleted` constant is placed in a _companion object_. This is another similarity with Scala: instead of declaring methods and fields as static, Kotlin places them as members of singleton classes (denoted by the `object` keyword instead of `class`). In case a class contains both instance and static methods, the static ones are placed into a so called companion singleton with the same name as the class. However in this case, we don't really need that, we can place the property directly into the activity class. Well, actually we don't need even that. Because Kotlin's standard library defines a lot of extension methods to Java types, we can call `filter()` directly on the list. The single argument lambda can use  the `it` keyword known from Groovy.
+
+```kotlin
+val completedTodos = adapter.items.filter { it.isCompleted }
+```
+
+The last things to improve are the callback methods for context and options menu. If-else blocks are treated like expressions (there is no need for ternary operators), so we can simplify the context menu handler to this:
+
+```kotlin
+override fun onContextItemSelected(item: MenuItem) =
+        if (item.itemId == R.id.menu_delete) {
+            val info = item.menuInfo as AdapterContextMenuInfo
+            adapter.remove(info.position)
+            true
+        } else false
+
+```
+
+We could do the same with handler of the options menu, but for the sake of exercise, we'll use a `when` block. It's a more powerful version of the classic `switch` that is based on _pattern matching_ known from functional programming. The branches can match much more complex expressions than just primitive values, enums and strings. For example, there can be multiple values in one branch condition, therefore there is no need for `break` at the end. Each branch and the whole block in the end also serve as an expression.
+
+```kotlin
+override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
+    R.id.menu_delete_completed -> {
+        val completedTodos = adapter.items.filter { it.isCompleted }
+        adapter.removeAll(completedTodos)
+        true
+    }
+    else -> false
+}
+```
