@@ -4,6 +4,8 @@ authorId: JMT
 tags: [kotlin, android, jvm languages]
 ---
 
+Since the dawn on Android development, there have always been efforts to use some of the alternative JVM languages instead of plain Java. But given the constraints of the mobile world, most of them faced issues that prevented them from receiving large adoption. [**Kotlin**](https://kotlinlang.org/), a new language developed by JetBrains with Android in mind, aims to change this.
+
 <!-- more -->
 
 ## Android specifics
@@ -28,7 +30,7 @@ Another JVM language whose popularity is on the rise, is **Clojure**. Like Groov
 
 A direct competition to Kotlin is **Ceylon**, also a recent statically-typed language developed by Gavin King (the author of Hibernate) at Red Hat. One of its main features is a strong type system without the complexity of Scala. Similarly to Kotlin, it supports nullable types such as `String?`, whose value can either be a String or null (as opposed to `String` which is compile-time checked not to contain null). However, in case of Ceylon, this is just an alias of `String | Null`, which is a union type. We can know them from Java's multicatch blocks, but here, they are a first-class language feature. One of the issues with Ceylon is the tooling support: targeting Android is not its priority and the official Gradle plugin is currently only in version `0.0.2`.
 
-## Kotlin
+## Fun with Kotlin
 
 So how does **Kotlin** stand in all this? According to the official website, it's a *Statically typed programming language for the JVM, Android and the browser* and also *100% interoperable with Java*.  When looking into the notes for the recent [1.0 release](https://blog.jetbrains.com/kotlin/2016/02/kotlin-1-0-released-pragmatic-language-for-jvm-and-android/), it's clear that the main idea behind the its design is **pragmatism**: Rather than offering lots of fancy and magical language features or a massive standard library, it just tackles the most painful issues with Java, such as null handling, lack of properties and the inability to add methods to 3rd party classes, while maintaining bidirectional compatibility with existing Java code and providing great tooling support as well. In the end, the language just feels like "a better Java".
 
@@ -63,7 +65,7 @@ import my.extensions.StringUtils;
 StringUtils.reverse("foo");
 ```
 
-Given that Kotlin is developed by JetBrains, the authors of IntelliJ IDEA and its derivates, great tooling support is no surprise. Once we download the official plugin into our Android Studio or IntelliJ, enabling Kotlin support in the project is as simple as clicking the *Configure Kotlin in Project* command in the Tools menu. This will add the Gradle plugin and the required dependencies into the build file. After that, we can start writing Kotlin classes either in the `src/main/kotlin` directory or we can put them directly into `src/main/java` along with the existing Java classes. But that's not all, the IDE even provides a convenient action that automatically converts existing Java classes into Kotlin! However, as we'll see in the following exercise, such code sometimes requires a bit of manual fine-tuning to get it working.
+Given that Kotlin is developed by the authors of IntelliJ IDEA and its derivates, great tooling support is no surprise. Once we download the official plugin into our Android Studio or IntelliJ, enabling Kotlin support in the project is as simple as clicking the *Configure Kotlin in Project* command in the Tools menu. This will add the Gradle plugin and the required dependencies into the build file. After that, we can start writing Kotlin classes either in the `src/main/kotlin` directory or we can put them directly into `src/main/java` along with the existing Java classes. But that's not all, the IDE even provides a convenient action that automatically converts existing Java classes into Kotlin! However, as we'll see in the following exercise, such code sometimes requires a bit of manual fine-tuning to get it working.
 
 {% img center-block /attachments/2016-05-11-android-kotlin/convert-to-kotlin.png %}
 
@@ -596,3 +598,7 @@ override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
     else -> false
 }
 ```
+
+# Conclusion
+
+We've seen that there is quite a little cost and when adopting Kotlin even for existing Android projects and the tooling support and interoperability with Java don't fail the expectations. The only issue is the automatic conversion feature that shouldn't be used without manual review of the generated code, but it can still make the transition from Java a bit easier. In the end, the resulting Kotlin code doesn't seem too different from the original Java one, but given the bigger power of the language, we can expect new libraries to appear in the future that will reduce the Android boilerplate and make the life of developers easier.
