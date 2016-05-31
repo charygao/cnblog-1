@@ -1,10 +1,10 @@
 # CN Blog #
 
-You need Hexo to build generate the blog. Right now it runs on Hexo 3.1.1.
+* `npm install hexo-cli -g` to install Hexo.  
+* `npm install` in blog folder to install dependencies.  
+* `npm start` to run server  
 
-`npm install`
-
-When installed, go to blog folder and run `hexo server -i 127.0.0.1`. Enjoy your blog on `127.0.0.1:4000`.
+Enjoy your blog on `127.0.0.1:4000`.
 
 # Drafts
 
