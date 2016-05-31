@@ -1,5 +1,5 @@
 title: Android, Kotlin and other JVM languages
-date: 2016/05/01 12:00
+date: 2016/05/31 12:00
 authorId: JMT
 tags: [kotlin, android, jvm languages]
 ---
