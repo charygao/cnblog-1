@@ -67,16 +67,16 @@ StringUtils.reverse("foo");
 
 Given that Kotlin is developed by the authors of IntelliJ IDEA and its derivates, great tooling support is no surprise. Once we download the official plugin into our Android Studio or IntelliJ, enabling Kotlin support in the project is as simple as clicking the *Configure Kotlin in Project* command in the Tools menu. This will add the Gradle plugin and the required dependencies into the build file. After that, we can start writing Kotlin classes either in the `src/main/kotlin` directory or we can put them directly into `src/main/java` along with the existing Java classes. But that's not all, the IDE even provides a convenient action that automatically converts existing Java classes into Kotlin! However, as we'll see in the following exercise, such code sometimes requires a bit of manual fine-tuning to get it working.
 
-{% img center-block /attachments/2016-05-11-android-kotlin/convert-to-kotlin.png %}
+{% img center-block /attachments/2016-05-31-android-kotlin/convert-to-kotlin.png %}
 
 # Code example
 
 We'll illustrate the process of converting Java to Kotlin on a very simplistic [TODO app](https://github.com/natix643/kotlin-todo). It only contains a single listview of todo items, each with a text and a checkbox to mark it's completion. Pressing the plus button opens a dialog with text input for adding a new todo. The items can be deleted either individually or it's possible to delete all completed todos using the overflow menu.
 
-{% img center-block /attachments/2016-05-11-android-kotlin/todo-app.png 400 %}
+{% img center-block /attachments/2016-05-31-android-kotlin/todo-app.png 400 %}
 
 We'll take off from the `master` branch, which contains only Java, and gradually convert all classes into Kotlin while trying not to break any functionality. The `kotlin` branch already contains a working result.
- 
+
 ## Todo class
 
 We'll start simply:
