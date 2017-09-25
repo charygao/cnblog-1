@@ -3,10 +3,14 @@
   "version": "3.0.0",
   "private": true,
   "hexo": {
-    "version": "3.2.0"
+    "version": "3.3.9"
+  },
+  "engines": {
+    "node": "8.5.0"
   },
   "scripts": {
-    "start": "hexo server -i 127.0.0.1"
+    "start": "hexo server -i 127.0.0.1",
+    "generate": "node_modules/.bin/hexo generate"
   },
   "dependencies": {
     "hexo": "^3.2.0",
